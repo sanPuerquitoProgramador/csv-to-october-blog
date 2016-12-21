@@ -1,0 +1,43 @@
+# ===================================
+#  Form Field Definitions
+# ===================================
+
+fields:
+    blog_version:
+        label: Plugin version
+        disabled: true
+        required: true
+        span: auto
+
+    import_csv_file:
+        label: Import File (CSV)
+        disabled: false
+        required: true
+        type: fileupload
+        mode: file
+        fileTypes: csv
+        mimeTpes: CSV
+        span: auto
+
+    default_author:
+        label: Default author
+        disabled: false
+        required: true
+        type: dropdown
+        span: auto
+
+    import_csv_now:
+        label: Import CSV after save
+        disabled: false
+        required: true
+        type: dropdown
+        options:
+            yes: Yes
+            no: No
+        span: auto
+
+    installation_folder:
+        label: Installation Folder (Without start or end slashes)
+        required: true
+        span: auto
+        value: '/'
