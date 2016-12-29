@@ -28,7 +28,7 @@ class Plugin extends PluginBase
         $plugin = Joomlacsvimport::getBlogVersion();
 
         //CheckPlugin
-        if($plugin == 'Rainlab.Blog'){
+        if($plugin == 'RainLab.Blog'){
             $blogPost = 'RainLab\\Blog\\Models\\Post';
         }
 
