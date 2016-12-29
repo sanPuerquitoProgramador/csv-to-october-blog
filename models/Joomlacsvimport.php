@@ -17,7 +17,7 @@ use Markdown;
 
 
 /**
- * blogcsvimport Model
+ * joomlacsvimport Model
  */
 class Joomlacsvimport extends Model
 {

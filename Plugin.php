@@ -6,7 +6,7 @@ use System\Classes\PluginBase;
 use System\Clases\PluginManager;
 
 /**
- * blogcsvimport Plugin Information File
+ * joomlacsvimport Plugin Information File
  */
 class Plugin extends PluginBase
 {
@@ -91,7 +91,7 @@ class Plugin extends PluginBase
     public function registerPermissions(){
         return [
             'pollozen.pollozen.access_component_menu' => ['tab' => 'Component Section','label' => 'Access to Component Section'],
-            'pollozen.blogcsvimport.access_blogcsvimport' => ['tab' => 'Component Section','label' => 'Access to CSV Importer Plugin']
+            'pollozen.joomlacsvimport.access_joomlacsvimport' => ['tab' => 'Component Section','label' => 'Access to CSV Importer Plugin']
         ];
     }
 
