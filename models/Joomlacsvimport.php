@@ -1,4 +1,4 @@
-<?php namespace Pollozen\Joomlacsvimport\Models;
+<?php namespace PolloZen\Joomlacsvimport\Models;
 
 use Model;
 use DB;

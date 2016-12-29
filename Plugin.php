@@ -1,7 +1,7 @@
-<?php namespace Pollozen\Joomlacsvimport;
+<?php namespace PolloZen\Joomlacsvimport;
 
 use Backend;
-use Pollozen\Joomlacsvimport\Models\Joomlacsvimport;
+use PolloZen\Joomlacsvimport\Models\Joomlacsvimport;
 use System\Classes\PluginBase;
 use System\Clases\PluginManager;
 
@@ -67,7 +67,7 @@ class Plugin extends PluginBase
                     'label'       => 'Joomla CSV Importer for Blog',
                     'description' => 'Import a Joomla CSV file posts into Blog plugin.',
                     'icon'        => 'icon-joomla',
-                    'class'       => 'Pollozen\joomlacsvimport\Models\Joomlacsvimport',
+                    'class'       => 'PolloZen\joomlacsvimport\Models\Joomlacsvimport',
                     'order'       => 1
                 ]
             ];
