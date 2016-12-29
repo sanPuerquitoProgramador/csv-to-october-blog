@@ -3,11 +3,32 @@
 # ===================================
 
 fields:
+    october_info_section:
+        label: 1. Information about your October Installation
+        type: section
+        comment:
+
     blog_version:
         label: Plugin version
         disabled: true
         required: true
         span: auto
+        comment: For the moment, only Rain Lab Blog is supported
+
+    installation_folder:
+        label: October Installation Folder (Without start or end slashes)
+        required: true
+        span: auto
+        value: '/'
+        commentHtml: true
+        comment: If your October installation is in a subfolder. e.g. superhost.com/<b>octobersite</b> especify the folder name.
+
+    csv_info_section:
+        label: 2. Upload your CSV File
+        type: section
+        commentHtml: true
+        size: huge
+        comment: The CSV file must have the next columns Title, Slug, Publish_up, Category_id, Category, Image_url, Content, Excerpt
 
     import_csv_file:
         label: Import File (CSV)
@@ -18,6 +39,15 @@ fields:
         fileTypes: csv
         mimeTpes: CSV
         span: auto
+        commentHtml: true
+        commentAbove: If you need it, there is a web tool for download your published post from Joomla in <a href="http://joomla2csv.bambu.ninja" target="_blank">Joomla2CSV</a>
+
+    import_info_section:
+        label: 3. Import options
+        type: section
+        commentHtml: true
+        size: huge
+        comment:
 
     default_author:
         label: Default author
@@ -26,18 +56,11 @@ fields:
         type: dropdown
         span: auto
 
-    import_csv_now:
-        label: Import CSV after save
-        disabled: false
-        required: true
+    publish_status:
+        label: The publish status for the imported post will be...
         type: dropdown
+        span: auto
+        showSearch: false
         options:
-            yes: Yes
-            no: No
-        span: auto
-
-    installation_folder:
-        label: Installation Folder (Without start or end slashes)
-        required: true
-        span: auto
-        value: '/'
+            0: Unpublished
+            1: Published

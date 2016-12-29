@@ -28,7 +28,6 @@ class Blogcsvimport extends Model
     public $implement = ['System.Behaviors.SettingsModel'];
     public $settingsCode = 'pollozen_blogcsvimporter_setting';
     public $settingsFields = 'fields.yaml';
-
     public $importNowFlag;
 
     /* Reglas de validación (del trait/Validaion) */
@@ -40,18 +39,6 @@ class Blogcsvimport extends Model
     public $attachOne = [
         'import_csv_file' => ['System\Models\File']
     ];
-
-    /**
-     * Ni idea tampoco, pero lo pide october
-     * @return array
-     */
-    public function getDefaultAuthorOptions(){
-        return User::lists('login', 'id');
-    }
-
-    public function getBlogVersionAttribute(){
-        return $this->getBlogVersion();
-    }
 
     /**
      * Validación de que existe RainLab Blog instalado
@@ -67,6 +54,18 @@ class Blogcsvimport extends Model
     }
 
     /**
+     * Se usan para llenar los campos del plugin
+     * @return array
+     */
+    public function getDefaultAuthorOptions(){
+        return User::lists('login', 'id');
+    }
+
+    public function getBlogVersionAttribute(){
+        return $this->getBlogVersion();
+    }
+
+    /**
      * AfterValidation No sé bien pa que sirve... copiado tal cual
      * @return [type] [description]
      */
@@ -78,12 +77,14 @@ class Blogcsvimport extends Model
 
     /**
      * AfterSave, verifica que la bandera importNowFlag venga en yes y si si, manda llamar la función onDoImport
-     * Lo que no sé es cuándo se manda traer y en consecuencia, no sé bien que pedo
+     * Lo que no sé es cuándo se manda traer y en consecuencia, no sé bien que pedo<<-- resuelto, afterSave es un método de october definido al momento de darle clic en guardar
      * @return [type] [description]
      */
     public function afterSave(){
         if(!empty($this->import_csv_file)){
-            $this->doItBaby();
+            $r = $this->doItBaby();
+        } else {
+            Flash::success('Looks like this is the first time you save the plugin. Save again to import the contents of the CSV file');
         }
     }
 
@@ -129,11 +130,15 @@ class Blogcsvimport extends Model
     }
 
     public function magicArray($filePath){
-        $fields = array( 'title','slug','publish_up','category_id','category','image_url','content');
+        $fields = array( 'title','slug','publish_up','category_id','category','image_url','content','excerpt');
 
-        $handle = fopen($filePath, "r");
+        if(file_exists($filePath)){
+            $handle = fopen($filePath, "r");
+        } else {
+            $r=array(FALSE,'The CSV File couldn\'t be opened. Is your October site in a subfolder?');
+            return $r;
+        }
         $rowControl = 0;
-
         while (($row = fgetcsv($handle, 0, ",", '"')) !== FALSE){
             if($rowControl == 0){
                 $header = $row;
@@ -143,13 +148,24 @@ class Blogcsvimport extends Model
         }
         unset($post[0]);
         fclose($handle);
-
+        // buscamos que existan los campos necesarios
         foreach($fields as $key=>$value){
             if(in_array($value, $header) != TRUE){
-                return FALSE;
+                $r=array(FALSE,$value.' column is not present in the CSV file');
+                return $r;
             }
         }
         return $post;
+    }
+
+    public function checkRow($post){
+        $fila = 0;
+        foreach($post as $key=>$value){
+            if($value==''){
+                $fila++;
+            }
+        }
+        return ($fila==0)?TRUE:FALSE;
     }
 
     /**
@@ -162,13 +178,16 @@ class Blogcsvimport extends Model
             $blogCategory = 'RainLab\\Blog\\Models\\Category';
             $blogPost = 'RainLab\\Blog\\Models\\Post';
         } else{
-            Flash::error('Errors encountered - no blog plugin detected, please make sure you have either the blog or problog plugin installed before you can use the importer.');
+            Flash::error('Errors encountered - no blog plugin detected, please make sure you have either the blog plugin installed before you can use the importer.');
             exit();
         }
         //Default count
         $countError = 0;
         $countImport = 0;
         $tempFolder = 'storage/app/uploads/public/';
+
+        //Publish status
+        $publishStatus = Blogcsvimport::get('publish_status');
 
         if(!empty($this->import_csv_file)){
             set_time_limit(360);
@@ -180,68 +199,85 @@ class Blogcsvimport extends Model
 
             $magicArray = $this->magicArray($csvFilePath);
 
-            if($magicArray == FALSE){
-                Flash::error('falla total');
-                exit();
+            if(isset($magicArray[0]) && $magicArray[0] == FALSE){
+                /*
+                 //esperemos a resolver el misterio del archivo, mientras pues va como success. Ni pedo...
+                 */
+                \Flash::success($magicArray[1]);
+                // exit();
             } else {
+                $emptyRows = 0;
+                $processed = 0;
+                $imported = 0;
                 foreach($magicArray as $key => $item){
-                    //Insert post.. first search the slug
-                    $postBlog = $blogPost::where('slug', '=', $item->slug)->first();
-                    //If post doesn't exist then create it
-                    if (! $postBlog) {
-                        $postBlog = $blogPost::create(['title' => $item->title, 'slug' => $item->slug, 'content' => '&nbsp;']);
-                        //Now go to the category (indented for clearity purpouse only)
-                            $postCategory = $blogCategory::firstOrCreate(['name' => $item->category]);
-                            $postCategory->slug = Str::slug($item->category);
-                            $postCategory->save();
-                            $postCategory->posts()->detach($postBlog->id); //Detach if exist
-                            $postCategory->posts()->attach($postBlog->id); //Attach category to post
-                        //the category is created and attached to the post
-                        //It's time for the user, which has been selected from the plugin Screen.
-                            $postBlog->user_id = $defaultAuthor;
-                        //Go back to the post... resume the data:
-                        $postBlog->title = $item->title;
-                        $postBlog->content = $item->content;
-                        $postBlog->slug = $item->slug;
-                        $postBlog->excerpt = (isset($item->excerpt)) ? $item->excerpt : "";
-                        $postBlog->published_at = $item->publish_up;
-                        $postBlog->save();
-                        //and the true magis is here... the featured image THANKS YOU SO MUCH TO KLYP
-                        $attachmentImage = $item->image_url;
-                        $fileContents = $this->downloadFileCurl($attachmentImage);
-                        if ($fileContents) {
-                            $fileName = basename($attachmentImage);
-                            $fileExt = File::extension($attachmentImage);
+                    $row = $this->checkRow($item);
+                    if($row != FALSE){
+                        //Insert post.. first search the slug
+                        $postBlog = $blogPost::where('slug', '=', $item->slug)->first();
+                        //If post doesn't exist then create it
+                        if (! $postBlog) {
+                            $postBlog = $blogPost::create(['title' => $item->title, 'slug' => $item->slug, 'content' => '&nbsp;']);
+                            //Now go to the category (indented for clearity purpouse only)
+                                $postCategory = $blogCategory::firstOrCreate(['name' => $item->category]);
+                                $postCategory->slug = Str::slug($item->category);
+                                $postCategory->save();
+                                $postCategory->posts()->detach($postBlog->id); //Detach if exist
+                                $postCategory->posts()->attach($postBlog->id); //Attach category to post
+                            //the category is created and attached to the post
+                            //It's time for the user, which has been selected from the plugin Screen.
+                                $postBlog->user_id = $defaultAuthor;
 
-                            $hash = md5($fileName. '!' .str_random(40));
-                            $diskName = base64_encode($fileName. '!' .$hash).'.'.$fileExt;
-                            $fileTemp = $tempFolder.$diskName;
+                            //Go back to the post... resume the data:
+                            $postBlog->title = $item->title;
+                            $postBlog->content = $item->content;
+                            $postBlog->slug = $item->slug;
+                            $postBlog->excerpt = (isset($item->excerpt)) ? $item->excerpt : "";
+                            $postBlog->published_at = $item->publish_up;
+                            $postBlog->published = $publishStatus;
+                            $postBlog->save();
+                            $imported++;
 
-                            File::put($fileTemp, $fileContents);
-                            $uploadFolders = $this->generateHashedFolderName($diskName);
-                            $uploadFolder = $tempFolder.$uploadFolders[0].'/'.$uploadFolders[1].'/'.$uploadFolders[2];
-                            File::makeDirectory($uploadFolder, 0755, true, true);
+                            //and the true magis is here... the featured image THANKS YOU SO MUCH TO KLYP
+                            $attachmentImage = $item->image_url;
+                            $fileContents = $this->downloadFileCurl($attachmentImage);
+                            if ($fileContents) {
+                                $fileName = basename($attachmentImage);
+                                $fileExt = File::extension($attachmentImage);
 
-                            $fileMime = File::mimeType($fileTemp);
-                            $fileSize = File::size($fileTemp);
+                                $hash = md5($fileName. '!' .str_random(40));
+                                $diskName = base64_encode($fileName. '!' .$hash).'.'.$fileExt;
+                                $fileTemp = $tempFolder.$diskName;
 
-                            $fileNew = $uploadFolder.'/'.$diskName;
-                            if (File:: move($fileTemp, $fileNew)) {
-                                $postFeaturedImage = new FileModel;
-                                $postFeaturedImage->disk_name = $diskName;
-                                $postFeaturedImage->file_name = $fileName;
-                                $postFeaturedImage->file_size = $fileSize;
-                                $postFeaturedImage->content_type = $fileMime;
-                                $postFeaturedImage->field = 'featured_images';
-                                $postFeaturedImage->attachment_id = $postBlog->id;
-                                $postFeaturedImage->attachment_type = 'RainLab\Blog\Models\Post';
-                                $postFeaturedImage->is_public = 1;
-                                $postFeaturedImage->sort_order = 1;
-                                $postFeaturedImage->save();
+                                File::put($fileTemp, $fileContents);
+                                $uploadFolders = $this->generateHashedFolderName($diskName);
+                                $uploadFolder = $tempFolder.$uploadFolders[0].'/'.$uploadFolders[1].'/'.$uploadFolders[2];
+                                File::makeDirectory($uploadFolder, 0755, true, true);
+
+                                $fileMime = File::mimeType($fileTemp);
+                                $fileSize = File::size($fileTemp);
+
+                                $fileNew = $uploadFolder.'/'.$diskName;
+                                if (File:: move($fileTemp, $fileNew)) {
+                                    $postFeaturedImage = new FileModel;
+                                    $postFeaturedImage->disk_name = $diskName;
+                                    $postFeaturedImage->file_name = $fileName;
+                                    $postFeaturedImage->file_size = $fileSize;
+                                    $postFeaturedImage->content_type = $fileMime;
+                                    $postFeaturedImage->field = 'featured_images';
+                                    $postFeaturedImage->attachment_id = $postBlog->id;
+                                    $postFeaturedImage->attachment_type = 'RainLab\Blog\Models\Post';
+                                    $postFeaturedImage->is_public = 1;
+                                    $postFeaturedImage->sort_order = 1;
+                                    $postFeaturedImage->save();
+                                }
                             }
                         }
+                        $processed++;
+                    } else {
+                        $emptyRows++;
                     }
                 }
+                \Flash::success($processed.' rows has been readed '.$imported.' post has been imported and '.$emptyRows.' rows has been excluded');
             }
         }
     }
