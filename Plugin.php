@@ -1,7 +1,7 @@
-<?php namespace Pollozen\Blogcsvimport;
+<?php namespace Pollozen\Joomlacsvimport;
 
 use Backend;
-use Pollozen\Blogcsvimport\Models\Blogcsvimport;
+use Pollozen\Joomlacsvimport\Models\Joomlacsvimport;
 use System\Classes\PluginBase;
 use System\Clases\PluginManager;
 
@@ -25,7 +25,7 @@ class Plugin extends PluginBase
     public function boot(){
         //Defaults
         $blogPost = '';
-        $plugin = Blogcsvimport::getBlogVersion();
+        $plugin = Joomlacsvimport::getBlogVersion();
 
         //CheckPlugin
         if($plugin == 'Rainlab.Blog'){
@@ -48,10 +48,10 @@ class Plugin extends PluginBase
     public function pluginDetails()
     {
         return [
-            'name'        => 'Blog CSV Post Importer',
-            'description' => 'Plugin for import content to Rainlab Blog using a CSV file. The plugin import content, create categories if needed and import a feature image using the image URL',
+            'name'        => 'Joomla CSV Post Importer',
+            'description' => 'Plugin for import content to Rainlab Blog using a Joomla CSV file. The plugin import content, create categories if needed and import a feature image using the image URL',
             'author'      => 'PolloZen',
-            'icon'        => 'icon-leaf'
+            'icon'        => 'icon-joomla'
         ];
     }
 
@@ -60,14 +60,14 @@ class Plugin extends PluginBase
      * @return array
      */
     public function registerSettings(){
-        $plugin = Blogcsvimport::getBlogVersion();
+        $plugin = Joomlacsvimport::getBlogVersion();
         if($plugin == 'RainLab.Blog'){
             return[
-                'blogcsvimportsettings'=>[
-                    'label'       => 'CSV Importer for Blog',
-                    'description' => 'Import CSV file posts into Blog plugin.',
-                    'icon'        => 'icon-download',
-                    'class'       => 'Pollozen\blogcsvimport\Models\Blogcsvimport',
+                'joomlacsvimportsettings'=>[
+                    'label'       => 'Joomla CSV Importer for Blog',
+                    'description' => 'Import a Joomla CSV file posts into Blog plugin.',
+                    'icon'        => 'icon-joomla',
+                    'class'       => 'Pollozen\joomlacsvimport\Models\Joomlacsvimport',
                     'order'       => 1
                 ]
             ];

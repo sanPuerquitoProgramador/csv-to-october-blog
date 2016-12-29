@@ -1,4 +1,4 @@
-<?php namespace Pollozen\Blogcsvimport\Models;
+<?php namespace Pollozen\Joomlacsvimport\Models;
 
 use Model;
 use DB;
@@ -19,7 +19,7 @@ use Markdown;
 /**
  * blogcsvimport Model
  */
-class Blogcsvimport extends Model
+class Joomlacsvimport extends Model
 {
     /* Se require validación de datos en la BD */
     use \October\Rain\Database\Traits\Validation;
@@ -124,7 +124,7 @@ class Blogcsvimport extends Model
     }
 
     public function checkSubfolder($path){
-        $folder = '/'.Blogcsvimport::get('installation_folder').'/';
+        $folder = '/'.Joomlacsvimport::get('installation_folder').'/';
         $path = str_replace($folder, '', $path);
         return $path;
     }
@@ -173,7 +173,7 @@ class Blogcsvimport extends Model
      * @return array
      */
     public function doItBaby(){
-        $blogVersion = Blogcsvimport::get('blog_version');
+        $blogVersion = Joomlacsvimport::get('blog_version');
         if($blogVersion == 'RainLab.Blog'){
             $blogCategory = 'RainLab\\Blog\\Models\\Category';
             $blogPost = 'RainLab\\Blog\\Models\\Post';
@@ -187,11 +187,11 @@ class Blogcsvimport extends Model
         $tempFolder = 'storage/app/uploads/public/';
 
         //Publish status
-        $publishStatus = Blogcsvimport::get('publish_status');
+        $publishStatus = Joomlacsvimport::get('publish_status');
 
         if(!empty($this->import_csv_file)){
             set_time_limit(360);
-            $defaultAuthor = Blogcsvimport::get('default_author');
+            $defaultAuthor = Joomlacsvimport::get('default_author');
 
             $csvFile = $this->import_csv_file;
             $csvFilePath = $csvFile->getPath();
