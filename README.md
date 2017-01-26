@@ -10,7 +10,7 @@ You will need a CSV file which contains the next structure:
 | Lorem Ipsum | lorem-ipsum | 01/11/2016,12:06:08 a.m. | 1 | Category Name | http://www.test.com/im.jpg | Lorem Ipsum Dolorem Sit amet | Lorem Ipsum Dolorem |
 *The columns order is not relevant. The really important thing is the name of columns and all the columns are required*
 
-**The file can be created using some Joomla plugin or you can use the freemium service  [Joomla 2 CSV](http://joomla2csv.bambu.ninja) **
+**The file can be created using some Joomla plugin or you can use the freemium service  [Joomla 2 CSV](http://joomla2csv.bambu.ninja)**
 
 ###Step 1
 Install this pretty plugin, is free! XD, then, go to the **October Backend - Settings**. There you will find the **Joomla CSV Importer for Blog**
@@ -33,7 +33,7 @@ The post data will be imported to the RainLab Blog, if the post category doesn't
 
 Additional Information:
 - The import process take a while, because the plugin grabs the image_url and save it in your server, so be patient, take a coffee, drink a beer and let the plug in do the magic.
-- The Content is HTML Stripped. Just the <iframe> and <a> tags are conserved
+- The Content is HTML Stripped. Just the ```<iframe>``` and ```<a>`` tags are conserved
 - The Excerpt is fully HTML Stripped
 - If a column is missing in the CSV file, the import process will not start.
 - If the plugin found a row with empty fields, this row will be ignored. If need it, you can use the "Validate CSV" option in the freemium service  [Joomla 2 CSV](http://joomla2csv.bambu.ninja)
