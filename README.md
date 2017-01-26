@@ -1,6 +1,6 @@
 #Migration plugin from CSV file to Rain Lab Blog
 
-Plugin for import a CSV file with featured images (url's) to Rainlab Blog using a Joomla CSV file. The plugin import content, create categories if needed and import a feature image using the image URL. Usesful to migrate from Joomla or Wordpress to OctoberCMS
+Plugin for import a CSV file with featured images (url's) to Rainlab Blog using a Joomla CSV file. The plugin import content, create categories if needed and import a feature image using the image URL. Useful to migrate from Joomla or Wordpress to OctoberCMS
 
 ###Pre requisites
 You will need a CSV file which contains the next structure:
